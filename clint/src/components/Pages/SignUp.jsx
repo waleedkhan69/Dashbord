@@ -1,16 +1,40 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const auth = localStorage.getItem('user');
+    if (auth) {
+      navigate('/');
+    }
+  });
   const [errors, seterror] = useState({});
   const [FormData, setformdata] = useState({
     name: '',
     password: '',
     email: '',
   });
-  const handlechange = (e) => {
-    const { id, value } = e.target;
-    setformdata({ ...FormData, [id]: value });
+  const collectionData = async () => {
+    let result = await fetch('http://localhost:3000/signin', {
+      method: 'post',
+      body: JSON.stringify(FormData),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    result = await result.json();
+    console.warn(result);
+    localStorage.setItem('user', JSON.stringify(result));
+    if (result) {
+      navigate('/products');
+    } else {
+      console.log('kjhojhfe');
+    }
   };
+
+  // const handlechange = (e) => {
+  //   const { id, value } = e.target;
+  //   setformdata({ ...FormData, [id]: value });
+  // };
   const validation = () => {
     const errors = {};
     if (!FormData.name) {
@@ -49,7 +73,9 @@ const SignUp = () => {
               type='text'
               id='firstname'
               value={FormData.name}
-              onChange={handlechange}
+              onChange={(e) => {
+                setformdata({ ...FormData, name: e.target.value });
+              }}
               placeholder='Enter your name'
               className={`border ${
                 errors.name ? 'border-red-500' : ''
@@ -61,7 +87,9 @@ const SignUp = () => {
             <input
               type='email'
               id='email'
-              onChange={handlechange}
+              onChange={(e) => {
+                setformdata({ ...FormData, email: e.target.value });
+              }}
               placeholder='example@gmail.com'
               className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
             />
@@ -71,7 +99,9 @@ const SignUp = () => {
             <input
               type='password'
               id='password'
-              onChange={handlechange}
+              onChange={(e) => {
+                setformdata({ ...FormData, password: e.target.value });
+              }}
               placeholder='Enter your password'
               className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
             />
@@ -80,6 +110,7 @@ const SignUp = () => {
             )}
           </div>
           <button
+            onClick={collectionData}
             type='submit'
             className='bg-blue-400 text-white font-bold rounded-md mt-6 py-2 w-full hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400'
           >
